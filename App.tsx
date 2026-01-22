@@ -119,6 +119,23 @@ const App: React.FC = () => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [gameState, isPaused, handleLevelComplete]);
 
+  // Keyboard movement (WASD / Arrows)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (gameState !== GameState.PLAYING || isPaused) return;
+      const key = e.key.toLowerCase();
+      if (key === 'a' || key === 'arrowleft') {
+        handleMove(-20);
+      } else if (key === 'd' || key === 'arrowright') {
+        handleMove(20);
+      } else if (key === 'p' || key === 'escape') {
+        togglePause();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [gameState, isPaused]);
+
   // Mobile/WASD Movement simulation via CustomEvent
   const handleMove = (delta: number) => {
     window.dispatchEvent(new CustomEvent('move-basket', { detail: delta }));
