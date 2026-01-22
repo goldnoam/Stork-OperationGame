@@ -25,7 +25,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, highScore, lang, spe
   };
 
   return (
-    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-sky-400/90 to-sky-600/90 text-white text-center">
+    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-sky-400/90 to-sky-600/90 text-white text-center animate-in fade-in duration-700">
       <div className="mb-8 animate-bounce">
          <span className="text-8xl drop-shadow-2xl" role="img" aria-label="baby bottle">🍼</span>
       </div>
@@ -44,7 +44,8 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, highScore, lang, spe
         <button 
           onClick={handleStart}
           onFocus={() => speak(t.start)}
-          className="bg-pink-500 hover:bg-pink-400 text-white font-black text-3xl px-12 py-5 rounded-full shadow-2xl transition-all hover:scale-110 active:scale-95 border-b-8 border-pink-700 active:border-b-0"
+          onMouseEnter={() => speak(t.start)}
+          className="bg-pink-500 hover:bg-pink-400 text-white font-black text-3xl px-12 py-5 rounded-full shadow-2xl transition-all hover:scale-110 active:scale-95 border-b-8 border-pink-700 active:border-b-0 focus:ring-4 focus:ring-white"
           aria-label={t.start}
         >
           {t.start}
@@ -53,24 +54,25 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, highScore, lang, spe
         <button 
           onClick={handleShowHow}
           onFocus={() => speak(t.howToPlay)}
-          className="bg-sky-700/50 hover:bg-sky-700/70 text-white font-bold text-lg px-8 py-3 rounded-full border border-white/20 transition-all"
+          onMouseEnter={() => speak(t.howToPlay)}
+          className="bg-sky-700/50 hover:bg-sky-700/70 text-white font-bold text-lg px-8 py-3 rounded-full border border-white/20 transition-all focus:ring-4 focus:ring-white"
         >
           {t.howToPlay}
         </button>
       </div>
 
       {showInstructions && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" role="dialog" aria-labelledby="instructions-title">
           <div className="bg-white text-slate-900 p-8 rounded-3xl max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-300">
             <button 
               onClick={() => setShowInstructions(false)}
               onFocus={() => speak("Close")}
-              className="absolute top-4 left-4 text-gray-400 hover:text-pink-500 text-2xl"
+              className="absolute top-4 left-4 text-gray-400 hover:text-pink-500 text-2xl p-2 rounded-full focus:ring-4 focus:ring-pink-500"
               aria-label="Close"
             >
               ✕
             </button>
-            <h2 className="text-3xl font-black mb-6 text-sky-600">{t.instructionsTitle}</h2>
+            <h2 id="instructions-title" className="text-3xl font-black mb-6 text-sky-600">{t.instructionsTitle}</h2>
             
             <div className="space-y-6 text-right" dir={lang === 'he' ? 'rtl' : 'ltr'}>
               <div>
@@ -92,7 +94,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, highScore, lang, spe
             <button 
               onClick={() => setShowInstructions(false)}
               onFocus={() => speak(t.understand)}
-              className="mt-8 w-full bg-pink-500 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-pink-400 transition-colors"
+              className="mt-8 w-full bg-pink-500 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-pink-400 transition-colors focus:ring-4 focus:ring-pink-300"
             >
               {t.understand}
             </button>

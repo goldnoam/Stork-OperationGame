@@ -35,6 +35,7 @@ const App: React.FC = () => {
   
   const timerRef = useRef<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const moveIntervalRef = useRef<number | null>(null);
 
   const t = translations[lang];
   const isRtl = lang === 'he';
@@ -45,13 +46,26 @@ const App: React.FC = () => {
     document.documentElement.lang = lang;
   }, [isDarkMode, isRtl, lang]);
 
+  // Load High Score from Local Storage
+  useEffect(() => {
+    const saved = localStorage.getItem('stork_mission_highscore');
+    if (saved) setHighScore(parseInt(saved, 10));
+  }, []);
+
+  useEffect(() => {
+    if (score > highScore) {
+      setHighScore(score);
+      localStorage.setItem('stork_mission_highscore', score.toString());
+    }
+  }, [score, highScore]);
+
   // Handle Music
   useEffect(() => {
     if (isMusicOn && gameState === GameState.PLAYING && !isPaused) {
       if (!audioRef.current) {
         audioRef.current = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
         audioRef.current.loop = true;
-        audioRef.current.volume = 0.3;
+        audioRef.current.volume = 0.2;
       }
       audioRef.current.play().catch(() => {});
     } else {
@@ -72,17 +86,20 @@ const App: React.FC = () => {
     setScore(0); setLevel(1); setBabiesSavedInLevel(0);
     setTimeLeft(LEVEL_DURATION); setIsPaused(false); setActiveEffects([]);
     setGameState(GameState.PLAYING);
+    speak(t.start);
   };
 
   const handleLevelComplete = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     setActiveEffects([]); setGameState(GameState.LEVEL_END);
-  }, []);
+    speak(t.levelComplete);
+  }, [speak, t.levelComplete]);
 
   const nextLevel = () => {
     setLevel(prev => prev + 1); setBabiesSavedInLevel(0);
     setTimeLeft(LEVEL_DURATION); setIsPaused(false); setActiveEffects([]);
     setGameState(GameState.PLAYING);
+    speak(t.nextLevel);
   };
 
   useEffect(() => {
@@ -102,6 +119,23 @@ const App: React.FC = () => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [gameState, isPaused, handleLevelComplete]);
 
+  // Mobile/WASD Movement simulation via CustomEvent
+  const handleMove = (delta: number) => {
+    window.dispatchEvent(new CustomEvent('move-basket', { detail: delta }));
+  };
+
+  const startContinuousMove = (delta: number) => {
+    if (moveIntervalRef.current) return;
+    moveIntervalRef.current = window.setInterval(() => handleMove(delta), 16);
+  };
+
+  const stopContinuousMove = () => {
+    if (moveIntervalRef.current) {
+      clearInterval(moveIntervalRef.current);
+      moveIntervalRef.current = null;
+    }
+  };
+
   const togglePause = () => { 
     const nextPaused = !isPaused;
     setIsPaused(nextPaused); 
@@ -116,7 +150,7 @@ const App: React.FC = () => {
   const toggleMusic = () => { 
     const nextOn = !isMusicOn;
     setIsMusicOn(nextOn); 
-    speak(t.toggleMusic); 
+    speak(nextOn ? "Music On" : "Music Off"); 
   };
 
   const cycleFontSize = () => {
@@ -138,11 +172,10 @@ const App: React.FC = () => {
           onChange={(e) => {
             const newLang = e.target.value as Language;
             setLang(newLang);
-            // Wait a tiny bit for state to propagate so translation is correct
             setTimeout(() => speak(translations[newLang].langSelect), 50);
           }}
           onFocus={() => speak(t.langSelect)}
-          className="bg-white/20 backdrop-blur-md px-2 py-2 rounded-lg border border-white/30 text-xs font-bold appearance-none cursor-pointer hover:bg-white/40"
+          className="bg-white/20 backdrop-blur-md px-2 py-2 rounded-lg border border-white/30 text-xs font-bold appearance-none cursor-pointer hover:bg-white/40 focus:ring-4 focus:ring-sky-500"
           aria-label={t.langSelect}
         >
           <option value="he">עברית</option>
@@ -158,7 +191,7 @@ const App: React.FC = () => {
         <button 
           onClick={cycleFontSize}
           onFocus={() => speak(t.toggleFontSize)}
-          className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-xs font-bold"
+          className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-xs font-bold hover:bg-white/40 focus:ring-4 focus:ring-sky-500"
           title={t.toggleFontSize}
           aria-label={t.toggleFontSize}
         >
@@ -168,7 +201,7 @@ const App: React.FC = () => {
         <button 
           onClick={toggleMusic}
           onFocus={() => speak(t.toggleMusic)}
-          className={`p-3 rounded-full backdrop-blur-md shadow-lg border border-white/30 transition-all ${isMusicOn ? 'bg-pink-500/50' : 'bg-white/20'}`}
+          className={`p-3 rounded-full backdrop-blur-md shadow-lg border border-white/30 transition-all ${isMusicOn ? 'bg-pink-500/50' : 'bg-white/20'} hover:bg-white/40 focus:ring-4 focus:ring-sky-500`}
           title={t.toggleMusic}
           aria-label={t.toggleMusic}
         >
@@ -178,7 +211,7 @@ const App: React.FC = () => {
         <button 
           onClick={toggleTheme}
           onFocus={() => speak(t.toggleTheme)}
-          className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40"
+          className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40 focus:ring-4 focus:ring-sky-500"
           title={t.toggleTheme}
           aria-label={t.toggleTheme}
         >
@@ -189,7 +222,7 @@ const App: React.FC = () => {
           <button 
             onClick={togglePause}
             onFocus={() => speak(isPaused ? t.resume : t.pause)}
-            className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40"
+            className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40 focus:ring-4 focus:ring-sky-500"
             aria-label={isPaused ? t.resume : t.pause}
           >
             {isPaused ? '▶️' : '⏸️'}
@@ -203,6 +236,7 @@ const App: React.FC = () => {
 
       {gameState === GameState.PLAYING && (
         <>
+          {/* HUD */}
           <div className={`absolute top-4 ${isRtl ? 'right-4' : 'left-4'} flex gap-4 z-50`}>
             <div className="bg-white/10 dark:bg-black/30 backdrop-blur-md px-6 py-2 rounded-full border-2 border-sky-400">
               <span className="font-bold">{t.score}: {score}</span>
@@ -212,7 +246,7 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center z-40 hidden md:flex">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center z-40">
              <div className="bg-white/10 dark:bg-black/30 backdrop-blur-md px-8 py-1 rounded-full border-2 border-pink-400">
                 <span className="text-pink-500 font-black">{currentLevelName}</span>
               </div>
@@ -225,9 +259,40 @@ const App: React.FC = () => {
               setScore(s => s + points);
               setBabiesSavedInLevel(prev => prev + 1);
             }} 
-            onMiss={() => {}} 
+            onMiss={() => {
+              setGameState(GameState.GAME_OVER);
+              speak(t.gameOver);
+            }} 
             onEffectsChange={setActiveEffects}
           />
+
+          {/* Mobile Directional Controls (WASD alternative) */}
+          <div className="absolute bottom-16 left-0 w-full flex justify-between px-8 z-50 md:hidden pointer-events-none">
+            <button 
+              onMouseDown={() => startContinuousMove(-10)}
+              onMouseUp={stopContinuousMove}
+              onMouseLeave={stopContinuousMove}
+              onTouchStart={(e) => { e.preventDefault(); startContinuousMove(-10); }}
+              onTouchEnd={stopContinuousMove}
+              onFocus={() => speak(t.moveLeft)}
+              className="pointer-events-auto w-24 h-24 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-4xl shadow-xl border-4 border-white/30 active:scale-90 transition-transform focus:ring-4 focus:ring-sky-500"
+              aria-label={t.moveLeft}
+            >
+              ⬅️
+            </button>
+            <button 
+              onMouseDown={() => startContinuousMove(10)}
+              onMouseUp={stopContinuousMove}
+              onMouseLeave={stopContinuousMove}
+              onTouchStart={(e) => { e.preventDefault(); startContinuousMove(10); }}
+              onTouchEnd={stopContinuousMove}
+              onFocus={() => speak(t.moveRight)}
+              className="pointer-events-auto w-24 h-24 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-4xl shadow-xl border-4 border-white/30 active:scale-90 transition-transform focus:ring-4 focus:ring-sky-500"
+              aria-label={t.moveRight}
+            >
+              ➡️
+            </button>
+          </div>
         </>
       )}
 
@@ -241,9 +306,9 @@ const App: React.FC = () => {
 
       <footer className={`absolute bottom-2 ${isRtl ? 'right-0 text-right' : 'left-0 text-left'} w-full px-4 flex justify-between items-center text-[10px] opacity-50 z-[100]`}>
         <div>(C) Noam Gold AI 2026</div>
-        <div>
-          <span>{t.feedback}: </span>
-          <a href="mailto:goldnoamai@gmail.com" className="underline">goldnoamai@gmail.com</a>
+        <div className="flex gap-4 items-center">
+          <a href="#" className="hover:underline" onClick={(e) => { e.preventDefault(); speak(t.feedback); }}>{t.feedback}</a>
+          <a href="mailto:goldnoamai@gmail.com" className="underline focus:ring-2 focus:ring-sky-500">goldnoamai@gmail.com</a>
         </div>
       </footer>
     </div>

@@ -30,7 +30,9 @@ export const translations = {
     toggleFontSize: "שנה גודל גופן",
     pause: "השהה משחק",
     resume: "המשך משחק",
-    langSelect: "בחר שפה"
+    langSelect: "בחר שפה",
+    moveLeft: "זוז שמאלה",
+    moveRight: "זוז ימינה"
   },
   en: {
     title: "Stork Mission",
@@ -62,7 +64,9 @@ export const translations = {
     toggleFontSize: "Toggle Font Size",
     pause: "Pause Game",
     resume: "Resume Game",
-    langSelect: "Select Language"
+    langSelect: "Select Language",
+    moveLeft: "Move Left",
+    moveRight: "Move Right"
   },
   zh: {
     title: "送子鸟任务",
@@ -94,7 +98,9 @@ export const translations = {
     toggleFontSize: "更改字体大小",
     pause: "暂停游戏",
     resume: "继续游戏",
-    langSelect: "选择语言"
+    langSelect: "选择语言",
+    moveLeft: "向左移动",
+    moveRight: "向右移动"
   },
   hi: {
     title: "स्टॉर्क मिशन",
@@ -114,7 +120,7 @@ export const translations = {
     scoring: "💎 स्कोरिंग",
     scoringDesc: "अंक पाने के लिए बच्चों को पकड़ें। सोना सबसे कीमती है!",
     powerups: "⚡ पावर-अप्स",
-    powerupsDesc: "स्लो-मो या चुंबक के लिए हीरे पकड़ें।",
+    powerupsDesc: "स्लो-מו या चुंबक के लिए हीरे पकड़ें।",
     understand: "समझ गया!",
     standard: "सामान्य",
     speedy: "तेज़",
@@ -126,7 +132,9 @@ export const translations = {
     toggleFontSize: "फ़ॉन्ट का आकार बदलें",
     pause: "खेल रोकें",
     resume: "खेल फिर से शुरू करें",
-    langSelect: "भाषा चुनें"
+    langSelect: "भाषा चुनें",
+    moveLeft: "बाएं चलें",
+    moveRight: "दाएं चलें"
   },
   de: {
     title: "Storch-Mission",
@@ -158,7 +166,9 @@ export const translations = {
     toggleFontSize: "Schriftgröße ändern",
     pause: "Spiel pausieren",
     resume: "Spiel fortsetzen",
-    langSelect: "Sprache auswählen"
+    langSelect: "Sprache auswählen",
+    moveLeft: "Nach links",
+    moveRight: "Nach rechts"
   },
   es: {
     title: "Misión Cigüeña",
@@ -190,7 +200,9 @@ export const translations = {
     toggleFontSize: "Cambiar tamaño de fuente",
     pause: "Pausar juego",
     resume: "Continuar juego",
-    langSelect: "Seleccionar idioma"
+    langSelect: "Seleccionar idioma",
+    moveLeft: "Izquierda",
+    moveRight: "Derecha"
   },
   fr: {
     title: "Mission Cigogne",
@@ -222,6 +234,8 @@ export const translations = {
     toggleFontSize: "Changer la taille de la police",
     pause: "Pause",
     resume: "Reprendre",
-    langSelect: "Choisir la langue"
+    langSelect: "Choisir la langue",
+    moveLeft: "Gauche",
+    moveRight: "Droite"
   }
 };
