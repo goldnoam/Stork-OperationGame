@@ -119,27 +119,41 @@ const App: React.FC = () => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [gameState, isPaused, handleLevelComplete]);
 
+  const togglePause = useCallback(() => { 
+    const nextPaused = !isPaused;
+    setIsPaused(nextPaused); 
+    speak(nextPaused ? t.pause : t.resume); 
+  }, [isPaused, speak, t.pause, t.resume]);
+
+  // Mobile/WASD Movement simulation via CustomEvent
+  const handleMove = useCallback((delta: number) => {
+    window.dispatchEvent(new CustomEvent('move-basket', { detail: delta }));
+  }, []);
+
   // Keyboard movement (WASD / Arrows)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (gameState !== GameState.PLAYING || isPaused) return;
+      if (gameState !== GameState.PLAYING) return;
+      
       const key = e.key.toLowerCase();
-      if (key === 'a' || key === 'arrowleft') {
-        handleMove(-20);
-      } else if (key === 'd' || key === 'arrowright') {
-        handleMove(20);
-      } else if (key === 'p' || key === 'escape') {
+      
+      // Horizontal Movement (A/D or Left/Right)
+      if (!isPaused) {
+        if (key === 'a' || key === 'arrowleft') {
+          handleMove(-30);
+        } else if (key === 'd' || key === 'arrowright') {
+          handleMove(30);
+        }
+      }
+
+      // Pause/Resume (W/S or P/Escape)
+      if (key === 'p' || key === 'escape' || key === 'w' || key === 's') {
         togglePause();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState, isPaused]);
-
-  // Mobile/WASD Movement simulation via CustomEvent
-  const handleMove = (delta: number) => {
-    window.dispatchEvent(new CustomEvent('move-basket', { detail: delta }));
-  };
+  }, [gameState, isPaused, handleMove, togglePause]);
 
   const startContinuousMove = (delta: number) => {
     if (moveIntervalRef.current) return;
@@ -153,12 +167,6 @@ const App: React.FC = () => {
     }
   };
 
-  const togglePause = () => { 
-    const nextPaused = !isPaused;
-    setIsPaused(nextPaused); 
-    speak(nextPaused ? t.pause : t.resume); 
-  };
-  
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
     speak(t.toggleTheme);
