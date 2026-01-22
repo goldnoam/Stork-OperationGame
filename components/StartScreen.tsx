@@ -43,6 +43,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, highScore, lang, spe
       <div className="flex flex-col gap-4 w-full max-w-xs">
         <button 
           onClick={handleStart}
+          onFocus={() => speak(t.start)}
           className="bg-pink-500 hover:bg-pink-400 text-white font-black text-3xl px-12 py-5 rounded-full shadow-2xl transition-all hover:scale-110 active:scale-95 border-b-8 border-pink-700 active:border-b-0"
           aria-label={t.start}
         >
@@ -51,6 +52,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, highScore, lang, spe
 
         <button 
           onClick={handleShowHow}
+          onFocus={() => speak(t.howToPlay)}
           className="bg-sky-700/50 hover:bg-sky-700/70 text-white font-bold text-lg px-8 py-3 rounded-full border border-white/20 transition-all"
         >
           {t.howToPlay}
@@ -62,6 +64,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, highScore, lang, spe
           <div className="bg-white text-slate-900 p-8 rounded-3xl max-w-md w-full shadow-2xl relative animate-in fade-in zoom-in duration-300">
             <button 
               onClick={() => setShowInstructions(false)}
+              onFocus={() => speak("Close")}
               className="absolute top-4 left-4 text-gray-400 hover:text-pink-500 text-2xl"
               aria-label="Close"
             >
@@ -88,6 +91,7 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart, highScore, lang, spe
 
             <button 
               onClick={() => setShowInstructions(false)}
+              onFocus={() => speak(t.understand)}
               className="mt-8 w-full bg-pink-500 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-pink-400 transition-colors"
             >
               {t.understand}

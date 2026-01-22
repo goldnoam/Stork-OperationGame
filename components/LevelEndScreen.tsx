@@ -31,6 +31,7 @@ const LevelEndScreen: React.FC<LevelEndScreenProps> = ({ level, saved, lang, onN
 
         <button 
           onClick={handleNext}
+          onFocus={() => speak(t.nextLevel)}
           className="w-full bg-sky-500 hover:bg-sky-400 text-white font-black text-2xl px-10 py-4 rounded-full shadow-lg transition-all hover:scale-105 active:scale-95 border-b-4 border-sky-700"
         >
           {t.nextLevel} ➔

@@ -38,6 +38,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({ score, highScore, lang,
 
         <button 
           onClick={handleRestart}
+          onFocus={() => speak(t.restart)}
           className="w-full bg-red-500 hover:bg-red-400 text-white font-black text-3xl px-12 py-5 rounded-full shadow-lg transition-all hover:scale-105 active:scale-95 border-b-4 border-red-700"
         >
           {t.restart} ↺

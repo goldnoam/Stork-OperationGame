@@ -9,6 +9,16 @@ import GameOverScreen from './components/GameOverScreen';
 
 const LEVEL_DURATION = 30;
 
+const langMap: Record<Language, string> = {
+  he: 'he-IL',
+  en: 'en-US',
+  zh: 'zh-CN',
+  hi: 'hi-IN',
+  de: 'de-DE',
+  es: 'es-ES',
+  fr: 'fr-FR'
+};
+
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GameState.START);
   const [isPaused, setIsPaused] = useState(false);
@@ -49,14 +59,14 @@ const App: React.FC = () => {
     }
   }, [isMusicOn, gameState, isPaused]);
 
-  const speak = (text: string) => {
+  const speak = useCallback((text: string) => {
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang === 'he' ? 'he-IL' : lang === 'zh' ? 'zh-CN' : lang === 'hi' ? 'hi-IN' : 'en-US';
+      utterance.lang = langMap[lang] || 'en-US';
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(utterance);
     }
-  };
+  }, [lang]);
 
   const startNewGame = () => {
     setScore(0); setLevel(1); setBabiesSavedInLevel(0);
@@ -92,9 +102,27 @@ const App: React.FC = () => {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [gameState, isPaused, handleLevelComplete]);
 
-  const togglePause = () => { setIsPaused(!isPaused); speak(isPaused ? "Resumed" : "Paused"); };
-  const toggleTheme = () => setIsDarkMode(!isDarkMode);
-  const toggleMusic = () => { setIsMusicOn(!isMusicOn); speak(isMusicOn ? "Music Off" : "Music On"); };
+  const togglePause = () => { 
+    const nextPaused = !isPaused;
+    setIsPaused(nextPaused); 
+    speak(nextPaused ? t.pause : t.resume); 
+  };
+  
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    speak(t.toggleTheme);
+  };
+  
+  const toggleMusic = () => { 
+    const nextOn = !isMusicOn;
+    setIsMusicOn(nextOn); 
+    speak(t.toggleMusic); 
+  };
+
+  const cycleFontSize = () => {
+    setFontSize(prev => prev === 'small' ? 'medium' : prev === 'medium' ? 'large' : 'small');
+    speak(t.toggleFontSize);
+  };
 
   const fontSizeClass = fontSize === 'small' ? 'text-sm' : fontSize === 'large' ? 'text-xl' : 'text-base';
   const currentLevelName = t.levelNames[(level - 1) % t.levelNames.length];
@@ -107,9 +135,15 @@ const App: React.FC = () => {
         {/* Language Switcher */}
         <select 
           value={lang} 
-          onChange={(e) => setLang(e.target.value as Language)}
+          onChange={(e) => {
+            const newLang = e.target.value as Language;
+            setLang(newLang);
+            // Wait a tiny bit for state to propagate so translation is correct
+            setTimeout(() => speak(translations[newLang].langSelect), 50);
+          }}
+          onFocus={() => speak(t.langSelect)}
           className="bg-white/20 backdrop-blur-md px-2 py-2 rounded-lg border border-white/30 text-xs font-bold appearance-none cursor-pointer hover:bg-white/40"
-          aria-label="Change Language"
+          aria-label={t.langSelect}
         >
           <option value="he">עברית</option>
           <option value="en">English</option>
@@ -122,28 +156,31 @@ const App: React.FC = () => {
 
         {/* Font Size Toggle */}
         <button 
-          onClick={() => setFontSize(prev => prev === 'small' ? 'medium' : prev === 'medium' ? 'large' : 'small')}
+          onClick={cycleFontSize}
+          onFocus={() => speak(t.toggleFontSize)}
           className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-xs font-bold"
-          title="Font Size"
-          aria-label="Toggle Font Size"
+          title={t.toggleFontSize}
+          aria-label={t.toggleFontSize}
         >
           {fontSize === 'small' ? 'A-' : fontSize === 'large' ? 'A+' : 'A'}
         </button>
 
         <button 
           onClick={toggleMusic}
+          onFocus={() => speak(t.toggleMusic)}
           className={`p-3 rounded-full backdrop-blur-md shadow-lg border border-white/30 transition-all ${isMusicOn ? 'bg-pink-500/50' : 'bg-white/20'}`}
-          title="Music"
-          aria-label="Toggle Music"
+          title={t.toggleMusic}
+          aria-label={t.toggleMusic}
         >
           {isMusicOn ? '🔊' : '🔈'}
         </button>
 
         <button 
           onClick={toggleTheme}
+          onFocus={() => speak(t.toggleTheme)}
           className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40"
-          title="Theme"
-          aria-label="Toggle Dark Mode"
+          title={t.toggleTheme}
+          aria-label={t.toggleTheme}
         >
           {isDarkMode ? '☀️' : '🌙'}
         </button>
@@ -151,8 +188,9 @@ const App: React.FC = () => {
         {gameState === GameState.PLAYING && (
           <button 
             onClick={togglePause}
+            onFocus={() => speak(isPaused ? t.resume : t.pause)}
             className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40"
-            aria-label={isPaused ? "Play" : "Pause"}
+            aria-label={isPaused ? t.resume : t.pause}
           >
             {isPaused ? '▶️' : '⏸️'}
           </button>
@@ -183,7 +221,10 @@ const App: React.FC = () => {
           <GameCanvas 
             level={level} 
             isPaused={isPaused}
-            onSaveBaby={(points) => setScore(s => s + points)} 
+            onSaveBaby={(points) => {
+              setScore(s => s + points);
+              setBabiesSavedInLevel(prev => prev + 1);
+            }} 
             onMiss={() => {}} 
             onEffectsChange={setActiveEffects}
           />

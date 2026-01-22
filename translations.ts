@@ -24,7 +24,13 @@ export const translations = {
     speedy: "מהיר",
     golden: "זהב",
     levelNames: ["מבצע עריסה", "עננים ורודים", "מהירות חסידתית", "תינוקות מעופפים", "הסערה בדרך", "שיא הגובה"],
-    feedback: "שלח משוב"
+    feedback: "שלח משוב",
+    toggleTheme: "החלף ערכת נושא",
+    toggleMusic: "הפעל או כבה מוזיקה",
+    toggleFontSize: "שנה גודל גופן",
+    pause: "השהה משחק",
+    resume: "המשך משחק",
+    langSelect: "בחר שפה"
   },
   en: {
     title: "Stork Mission",
@@ -50,7 +56,13 @@ export const translations = {
     speedy: "Speedy",
     golden: "Golden",
     levelNames: ["Cradle Op", "Pink Clouds", "Stork Speed", "Flying Babies", "Storm Coming", "Peak Height"],
-    feedback: "Feedback"
+    feedback: "Feedback",
+    toggleTheme: "Toggle Theme",
+    toggleMusic: "Toggle Music",
+    toggleFontSize: "Toggle Font Size",
+    pause: "Pause Game",
+    resume: "Resume Game",
+    langSelect: "Select Language"
   },
   zh: {
     title: "送子鸟任务",
@@ -76,7 +88,13 @@ export const translations = {
     speedy: "快速",
     golden: "金色",
     levelNames: ["摇篮行动", "粉色云彩", "飞鸟速度", "飞行婴儿", "风暴来袭", "巅峰高度"],
-    feedback: "反馈"
+    feedback: "反馈",
+    toggleTheme: "切换主题",
+    toggleMusic: "开关音乐",
+    toggleFontSize: "更改字体大小",
+    pause: "暂停游戏",
+    resume: "继续游戏",
+    langSelect: "选择语言"
   },
   hi: {
     title: "स्टॉर्क मिशन",
@@ -102,7 +120,13 @@ export const translations = {
     speedy: "तेज़",
     golden: "सुनहरा",
     levelNames: ["पालना मिशन", "गुलाबी बादल", "स्टॉर्क गति", "उड़ते बच्चे", "तूफान आ रहा है", "शिखर ऊंचाई"],
-    feedback: "प्रतिक्रिया"
+    feedback: "प्रतिक्रिया",
+    toggleTheme: "थीम बदलें",
+    toggleMusic: "संगीत चालू या बंद करें",
+    toggleFontSize: "फ़ॉन्ट का आकार बदलें",
+    pause: "खेल रोकें",
+    resume: "खेल फिर से शुरू करें",
+    langSelect: "भाषा चुनें"
   },
   de: {
     title: "Storch-Mission",
@@ -128,7 +152,13 @@ export const translations = {
     speedy: "Schnell",
     golden: "Gold",
     levelNames: ["Wiegen-Op", "Rosa Wolken", "Storch-Tempo", "Fliegende Babys", "Sturm kommt", "Gipfelhöhe"],
-    feedback: "Feedback"
+    feedback: "Feedback",
+    toggleTheme: "Design ändern",
+    toggleMusic: "Musik ein/aus",
+    toggleFontSize: "Schriftgröße ändern",
+    pause: "Spiel pausieren",
+    resume: "Spiel fortsetzen",
+    langSelect: "Sprache auswählen"
   },
   es: {
     title: "Misión Cigüeña",
@@ -154,7 +184,13 @@ export const translations = {
     speedy: "Rápido",
     golden: "Dorado",
     levelNames: ["Op. Cuna", "Nubes Rosas", "Velocidad Cigüeña", "Bebés Voladores", "Tormenta", "Altura Máxima"],
-    feedback: "Contacto"
+    feedback: "Contacto",
+    toggleTheme: "Cambiar tema",
+    toggleMusic: "Música sí/no",
+    toggleFontSize: "Cambiar tamaño de fuente",
+    pause: "Pausar juego",
+    resume: "Continuar juego",
+    langSelect: "Seleccionar idioma"
   },
   fr: {
     title: "Mission Cigogne",
@@ -180,6 +216,12 @@ export const translations = {
     speedy: "Rapide",
     golden: "Doré",
     levelNames: ["Op. Berceau", "Nuages Roses", "Vitesse Cigogne", "Bebés Volants", "Tempête", "Sommet"],
-    feedback: "Avis"
+    feedback: "Avis",
+    toggleTheme: "Changer le thème",
+    toggleMusic: "Activer/désactiver la musique",
+    toggleFontSize: "Changer la taille de la police",
+    pause: "Pause",
+    resume: "Reprendre",
+    langSelect: "Choisir la langue"
   }
 };
