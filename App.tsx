@@ -124,12 +124,11 @@ const App: React.FC = () => {
     speak(nextPaused ? t.pause : t.resume); 
   }, [isPaused, speak, t.pause, t.resume]);
 
-  // Movement Logic
   const handleMove = useCallback((delta: number) => {
     window.dispatchEvent(new CustomEvent('move-basket', { detail: delta }));
   }, []);
 
-  // WASD and Keyboard controls
+  // Keyboard controls: WASD + Arrows + Pause
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (gameState !== GameState.PLAYING) return;
@@ -139,9 +138,9 @@ const App: React.FC = () => {
       // Horizontal Movement (A/D or Left/Right)
       if (!isPaused) {
         if (key === 'a' || key === 'arrowleft') {
-          handleMove(-40);
+          handleMove(-50);
         } else if (key === 'd' || key === 'arrowright') {
-          handleMove(40);
+          handleMove(50);
         }
       }
 
@@ -290,10 +289,10 @@ const App: React.FC = () => {
           {/* On-screen Directional Controls for Mobile */}
           <div className="absolute bottom-16 left-0 w-full flex justify-between px-8 z-50 md:hidden pointer-events-none">
             <button 
-              onMouseDown={() => startContinuousMove(-15)}
+              onMouseDown={() => startContinuousMove(-20)}
               onMouseUp={stopContinuousMove}
               onMouseLeave={stopContinuousMove}
-              onTouchStart={(e) => { e.preventDefault(); startContinuousMove(-15); }}
+              onTouchStart={(e) => { e.preventDefault(); startContinuousMove(-20); }}
               onTouchEnd={stopContinuousMove}
               onFocus={() => speak(t.moveLeft)}
               className="pointer-events-auto w-24 h-24 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-4xl shadow-xl border-4 border-white/30 active:scale-90 transition-transform focus:ring-4 focus:ring-sky-500"
@@ -302,10 +301,10 @@ const App: React.FC = () => {
               ⬅️
             </button>
             <button 
-              onMouseDown={() => startContinuousMove(15)}
+              onMouseDown={() => startContinuousMove(20)}
               onMouseUp={stopContinuousMove}
               onMouseLeave={stopContinuousMove}
-              onTouchStart={(e) => { e.preventDefault(); startContinuousMove(15); }}
+              onTouchStart={(e) => { e.preventDefault(); startContinuousMove(20); }}
               onTouchEnd={stopContinuousMove}
               onFocus={() => speak(t.moveRight)}
               className="pointer-events-auto w-24 h-24 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-4xl shadow-xl border-4 border-white/30 active:scale-90 transition-transform focus:ring-4 focus:ring-sky-500"
