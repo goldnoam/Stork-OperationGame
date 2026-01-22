@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { GameState, PowerUpType, Language, FontSize, GameSettings } from './types';
+import { GameState, PowerUpType, Language, FontSize, GameSettings, ActiveEffect } from './types';
 import { translations } from './translations';
 import GameCanvas from './components/GameCanvas';
 import StartScreen from './components/StartScreen';
@@ -7,6 +7,7 @@ import LevelEndScreen from './components/LevelEndScreen';
 import GameOverScreen from './components/GameOverScreen';
 
 const LEVEL_DURATION = 30;
+const INITIAL_LIVES = 5;
 
 const langMap: Record<Language, string> = {
   he: 'he-IL',
@@ -27,10 +28,11 @@ const App: React.FC = () => {
   const [fontSize, setFontSize] = useState<FontSize>('medium');
   const [score, setScore] = useState(0);
   const [level, setLevel] = useState(1);
+  const [lives, setLives] = useState(INITIAL_LIVES);
   const [timeLeft, setTimeLeft] = useState(LEVEL_DURATION);
   const [babiesSavedInLevel, setBabiesSavedInLevel] = useState(0);
   const [highScore, setHighScore] = useState(0);
-  const [activeEffects, setActiveEffects] = useState<PowerUpType[]>([]);
+  const [activeEffects, setActiveEffects] = useState<ActiveEffect[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [settings, setSettings] = useState<GameSettings>({
     musicVolume: 0.5,
@@ -105,8 +107,13 @@ const App: React.FC = () => {
   }, [lang, settings.sfxVolume]);
 
   const startNewGame = useCallback(() => {
-    setScore(0); setLevel(1); setBabiesSavedInLevel(0);
-    setTimeLeft(LEVEL_DURATION); setIsPaused(false); setActiveEffects([]);
+    setScore(0); 
+    setLevel(1); 
+    setLives(INITIAL_LIVES);
+    setBabiesSavedInLevel(0);
+    setTimeLeft(LEVEL_DURATION); 
+    setIsPaused(false); 
+    setActiveEffects([]);
     setGameState(GameState.PLAYING);
     speak(t.start);
   }, [speak, t.start]);
@@ -119,16 +126,34 @@ const App: React.FC = () => {
 
   const handleLevelComplete = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
-    setActiveEffects([]); setGameState(GameState.LEVEL_END);
+    setActiveEffects([]); 
+    setGameState(GameState.LEVEL_END);
     speak(t.levelComplete);
   }, [speak, t.levelComplete]);
 
   const nextLevel = () => {
-    setLevel(prev => prev + 1); setBabiesSavedInLevel(0);
-    setTimeLeft(LEVEL_DURATION); setIsPaused(false); setActiveEffects([]);
+    setLevel(prev => prev + 1); 
+    setLives(INITIAL_LIVES); 
+    setBabiesSavedInLevel(0);
+    setTimeLeft(LEVEL_DURATION); 
+    setIsPaused(false); 
+    setActiveEffects([]);
     setGameState(GameState.PLAYING);
     speak(t.nextLevel);
   };
+
+  const handleMiss = useCallback(() => {
+    setLives(prev => {
+      const nextLives = prev - 1;
+      if (nextLives <= 0) {
+        setGameState(GameState.GAME_OVER);
+        speak(t.gameOver);
+        return 0;
+      }
+      speak(isRtl ? "חיים ירדו" : "Life lost");
+      return nextLives;
+    });
+  }, [speak, t.gameOver, isRtl]);
 
   useEffect(() => {
     if (gameState === GameState.PLAYING && !isPaused) {
@@ -228,16 +253,41 @@ const App: React.FC = () => {
 
       {gameState === GameState.PLAYING && (
         <>
-          <div className={`absolute top-4 ${isRtl ? 'right-4' : 'left-4'} flex gap-4 z-50`}>
-            <div className="bg-white/10 dark:bg-black/30 backdrop-blur-md px-6 py-2 rounded-full border-2 border-sky-400">
-              <span className="font-bold">{t.score}: {score}</span>
+          <div className={`absolute top-4 ${isRtl ? 'right-4' : 'left-4'} flex flex-wrap gap-2 sm:gap-4 z-50 max-w-[70%]`}>
+            <div className="bg-white/10 dark:bg-black/30 backdrop-blur-md px-4 sm:px-6 py-2 rounded-full border-2 border-sky-400">
+              <span className="font-bold whitespace-nowrap">{t.score}: {score}</span>
             </div>
-            <div className={`px-6 py-2 rounded-full border-2 transition-all ${timeLeft < 10 ? 'bg-red-500 text-white animate-pulse border-red-700' : 'bg-white/10 dark:bg-black/30 border-sky-400'}`}>
-              <span className="font-bold">{t.time}: {timeLeft}</span>
+            <div className={`px-4 sm:px-6 py-2 rounded-full border-2 transition-all ${timeLeft < 10 ? 'bg-red-500 text-white animate-pulse border-red-700' : 'bg-white/10 dark:bg-black/30 border-sky-400'}`}>
+              <span className="font-bold whitespace-nowrap">{t.time}: {timeLeft}</span>
+            </div>
+            <div className={`px-4 sm:px-6 py-2 rounded-full border-2 transition-all ${lives <= 1 ? 'bg-red-500 text-white animate-pulse border-red-700' : 'bg-white/10 dark:bg-black/30 border-sky-400'}`}>
+              <span className="font-bold whitespace-nowrap">{t.lives}: {Array.from({length: INITIAL_LIVES}).map((_, i) => (
+                <span key={i} className={i < lives ? 'opacity-100' : 'opacity-20 grayscale'}>❤️</span>
+              ))}</span>
             </div>
           </div>
 
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center z-40">
+          {/* Active Power-Ups HUD */}
+          <div className={`absolute top-20 ${isRtl ? 'right-4' : 'left-4'} flex flex-col gap-2 z-50`}>
+             {activeEffects.map(effect => {
+               const total = 8000;
+               const remaining = effect.endTime - Date.now();
+               const progress = Math.max(0, (remaining / total) * 100);
+               return (
+                 <div key={effect.type} className="flex items-center gap-2 bg-white/10 dark:bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/20 overflow-hidden min-w-[120px]">
+                    <span className="text-xl">{effect.type === 'slow_mo' ? '⏳' : '🧲'}</span>
+                    <div className="flex-1 h-2 bg-black/20 rounded-full overflow-hidden">
+                       <div 
+                         className={`h-full transition-all duration-300 ${effect.type === 'slow_mo' ? 'bg-blue-500' : 'bg-purple-500'}`} 
+                         style={{ width: `${progress}%` }}
+                       />
+                    </div>
+                 </div>
+               );
+             })}
+          </div>
+
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 flex flex-col items-center z-40 hidden sm:flex">
              <div className="bg-white/10 dark:bg-black/30 backdrop-blur-md px-8 py-1 rounded-full border-2 border-pink-400">
                 <span className="text-pink-500 font-black">{currentLevelName}</span>
               </div>
@@ -246,7 +296,7 @@ const App: React.FC = () => {
           <GameCanvas 
             level={level} isPaused={isPaused}
             onSaveBaby={(points) => { setScore(s => s + points); setBabiesSavedInLevel(prev => prev + 1); }} 
-            onMiss={() => { setGameState(GameState.GAME_OVER); speak(t.gameOver); }} 
+            onMiss={handleMiss} 
             onEffectsChange={setActiveEffects} settings={settings} lang={lang}
           />
 

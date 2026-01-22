@@ -37,7 +37,8 @@ export const translations = {
     sfxVolume: "עוצמת צלילים",
     sensitivity: "רגישות שליטה",
     close: "סגור",
-    saved: "ניצל!"
+    saved: "ניצל!",
+    lives: "חיים"
   },
   en: {
     title: "Stork Mission",
@@ -77,7 +78,8 @@ export const translations = {
     sfxVolume: "SFX Volume",
     sensitivity: "Sensitivity",
     close: "Close",
-    saved: "Saved!"
+    saved: "Saved!",
+    lives: "Lives"
   },
   zh: {
     title: "送子鸟任务",
@@ -117,7 +119,8 @@ export const translations = {
     sfxVolume: "音效音量",
     sensitivity: "灵敏度",
     close: "关闭",
-    saved: "拯救了！"
+    saved: "拯救了！",
+    lives: "生命"
   },
   hi: {
     title: "स्टॉर्क मिशन",
@@ -157,7 +160,8 @@ export const translations = {
     sfxVolume: "ध्वनि प्रभाव",
     sensitivity: "संवेदनशीलता",
     close: "बंद करें",
-    saved: "बचा लिया!"
+    saved: "बचा लिया!",
+    lives: "जीवन"
   },
   de: {
     title: "Storch-Mission",
@@ -197,7 +201,8 @@ export const translations = {
     sfxVolume: "Effektlautstärke",
     sensitivity: "Empfindlichkeit",
     close: "Schließen",
-    saved: "Gerettet!"
+    saved: "Gerettet!",
+    lives: "Leben"
   },
   es: {
     title: "Misión Cigüeña",
@@ -237,7 +242,8 @@ export const translations = {
     sfxVolume: "Volumen efectos",
     sensitivity: "Sensibilidad",
     close: "Cerrar",
-    saved: "¡Salvado!"
+    saved: "¡Salvado!",
+    lives: "Vidas"
   },
   fr: {
     title: "Mission Cigogne",
@@ -277,6 +283,7 @@ export const translations = {
     sfxVolume: "Volume effets",
     sensitivity: "Sensibilité",
     close: "Fermer",
-    saved: "Sauvé !"
+    saved: "Sauvé !",
+    lives: "Vies"
   }
 };

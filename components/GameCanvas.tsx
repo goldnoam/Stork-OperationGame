@@ -7,7 +7,7 @@ interface GameCanvasProps {
   isPaused: boolean;
   onSaveBaby: (points: number) => void;
   onMiss: () => void;
-  onEffectsChange: (effects: PowerUpType[]) => void;
+  onEffectsChange: (effects: ActiveEffect[]) => void;
   settings: GameSettings;
   lang: Language;
 }
@@ -83,8 +83,12 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ level, isPaused, onSaveBaby, on
       if (isPaused) return;
       const now = Date.now();
       
+      const beforeFilterCount = activeEffectsRef.current.length;
       activeEffectsRef.current = activeEffectsRef.current.filter(e => e.endTime > now);
-      onEffectsChange(activeEffectsRef.current.map(e => e.type));
+      
+      if (activeEffectsRef.current.length !== beforeFilterCount) {
+        onEffectsChange([...activeEffectsRef.current]);
+      }
 
       const isSlowMo = activeEffectsRef.current.some(e => e.type === 'slow_mo');
       const isMagnet = activeEffectsRef.current.some(e => e.type === 'magnet');
@@ -201,11 +205,9 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ level, isPaused, onSaveBaby, on
         const progress = Math.min(elapsed / CATCH_ANIM_DURATION, 1);
         const flyProgress = 1 - Math.pow(1 - progress, 3);
         
-        // Arching path to center of basket
         cb.x = cb.startPosX + (basketX - cb.startPosX) * flyProgress;
         cb.y = cb.startPosY + ((canvas.height - basketHeight - 35) - cb.startPosY) * flyProgress;
         
-        // Bounce effect
         cb.size = (cb.type === 'golden' ? 22 : 30);
         if (progress > 0.7) {
           const bounceFactor = Math.sin((progress - 0.7) * Math.PI * 6.6) * 6;
@@ -232,6 +234,8 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ level, isPaused, onSaveBaby, on
              activeEffectsRef.current.push({ type: pu.type, startTime: now, endTime: now + EFFECT_DURATION });
           }
           
+          onEffectsChange([...activeEffectsRef.current]);
+
           floatingScoresRef.current.push({
             id: nextScoreId.current++,
             x: pu.x,
@@ -258,19 +262,21 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ level, isPaused, onSaveBaby, on
       const isSlowMo = activeEffectsRef.current.some(e => e.type === 'slow_mo');
       const isMagnet = activeEffectsRef.current.some(e => e.type === 'magnet');
 
-      if (isSlowMo) {
-        ctx.fillStyle = 'rgba(147, 197, 253, 0.04)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = 'rgba(59, 130, 246, 0.25)';
-        ctx.lineWidth = 12;
-        ctx.strokeRect(0, 0, canvas.width, canvas.height);
-      }
-      if (isMagnet) {
-        ctx.fillStyle = 'rgba(168, 85, 247, 0.04)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.strokeStyle = 'rgba(168, 85, 247, 0.25)';
-        ctx.lineWidth = 12;
-        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+      // Visual Border Indicators
+      if (isSlowMo || isMagnet) {
+        const pulse = (Math.sin(now * 0.005) + 1) / 2;
+        const borderThickness = 8 + pulse * 12;
+        
+        if (isSlowMo) {
+          ctx.strokeStyle = `rgba(59, 130, 246, ${0.2 + pulse * 0.3})`;
+          ctx.lineWidth = borderThickness;
+          ctx.strokeRect(0, 0, canvas.width, canvas.height);
+        }
+        if (isMagnet) {
+          ctx.strokeStyle = `rgba(168, 85, 247, ${0.2 + pulse * 0.3})`;
+          ctx.lineWidth = borderThickness;
+          ctx.strokeRect(borderThickness, borderThickness, canvas.width - borderThickness*2, canvas.height - borderThickness*2);
+        }
       }
 
       storksRef.current.forEach(stork => {
@@ -301,14 +307,12 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ level, isPaused, onSaveBaby, on
 
         const isGolden = baby.type === 'golden';
         const mainColor = isGolden ? '#FDE047' : baby.type === 'speedy' ? '#F472B6' : '#93C5FD';
-        const patternColor = isGolden ? '#EAB308' : baby.type === 'speedy' ? '#DB2777' : '#2563EB';
 
         if (isGolden) {
           const shimmer = (Math.sin(now * 0.015) + 1) / 2;
           ctx.shadowBlur = 12 + shimmer * 28;
           ctx.shadowColor = `rgba(250, 204, 21, ${0.45 + shimmer * 0.55})`;
           
-          // Glinting sparkle particles around golden baby
           for (let i = 0; i < 4; i++) {
               const sparkAngle = now * 0.004 + (i * Math.PI / 2);
               const sparkR = baby.size * (1.2 + Math.sin(now * 0.01 + i) * 0.3);
@@ -387,19 +391,27 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ level, isPaused, onSaveBaby, on
         const remaining = eff.endTime - now;
         const total = EFFECT_DURATION;
         const progress = Math.max(0, remaining / total);
-        const arcR = 55 + (idx * 14);
+        const arcR = 65 + (idx * 16);
         
         ctx.beginPath();
-        ctx.lineWidth = 7;
+        ctx.lineWidth = 8;
         ctx.lineCap = 'round';
-        ctx.strokeStyle = eff.type === 'slow_mo' ? 'rgba(59, 130, 246, 0.35)' : 'rgba(168, 85, 247, 0.35)';
+        ctx.strokeStyle = eff.type === 'slow_mo' ? 'rgba(59, 130, 246, 0.2)' : 'rgba(168, 85, 247, 0.2)';
         ctx.arc(0, basketHeight/2, arcR, 0, Math.PI * 2);
         ctx.stroke();
         
         ctx.beginPath();
+        ctx.lineWidth = 8;
+        ctx.lineCap = 'round';
         ctx.strokeStyle = eff.type === 'slow_mo' ? '#3B82F6' : '#A855F7';
         ctx.arc(0, basketHeight/2, arcR, -Math.PI/2, -Math.PI/2 + (Math.PI * 2 * progress));
         ctx.stroke();
+
+        ctx.fillStyle = '#FFF';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(eff.type === 'slow_mo' ? '⏳' : '🧲', Math.cos(-Math.PI/2 + (Math.PI * 2 * progress)) * arcR, Math.sin(-Math.PI/2 + (Math.PI * 2 * progress)) * arcR + basketHeight/2);
       });
 
       ctx.fillStyle = isMagnet ? 'rgba(168, 85, 247, 0.2)' : 'rgba(0,0,0,0.1)';
@@ -411,11 +423,6 @@ const GameCanvas: React.FC<GameCanvasProps> = ({ level, isPaused, onSaveBaby, on
       const r = 18;
       ctx.beginPath(); ctx.moveTo(-basketWidth/2 + r, 0); ctx.lineTo(basketWidth/2 - r, 0); ctx.quadraticCurveTo(basketWidth/2, 0, basketWidth/2, r); ctx.lineTo(basketWidth/2, basketHeight - r); ctx.quadraticCurveTo(basketWidth/2, basketHeight, basketWidth/2 - r, basketHeight); ctx.lineTo(-basketWidth/2 + r, basketHeight); ctx.quadraticCurveTo(-basketWidth/2, basketHeight, -basketWidth/2, basketHeight - r); ctx.lineTo(-basketWidth/2, r); ctx.quadraticCurveTo(-basketWidth/2, 0, -basketWidth/2 + r, 0);
       ctx.fill(); ctx.stroke();
-
-      ctx.strokeStyle = '#E0F2FE'; ctx.lineWidth = 1.5;
-      for (let i = -basketWidth/2 + 12; i < basketWidth/2; i += 18) {
-        ctx.beginPath(); ctx.moveTo(i, 6); ctx.lineTo(i, basketHeight - 6); ctx.stroke();
-      }
 
       ctx.restore();
 
