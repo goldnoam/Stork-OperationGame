@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { GameState, PowerUpType, Language, FontSize } from './types';
 import { translations } from './translations';
@@ -125,12 +124,12 @@ const App: React.FC = () => {
     speak(nextPaused ? t.pause : t.resume); 
   }, [isPaused, speak, t.pause, t.resume]);
 
-  // Mobile/WASD Movement simulation via CustomEvent
+  // Movement Logic
   const handleMove = useCallback((delta: number) => {
     window.dispatchEvent(new CustomEvent('move-basket', { detail: delta }));
   }, []);
 
-  // Keyboard movement (WASD / Arrows)
+  // WASD and Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (gameState !== GameState.PLAYING) return;
@@ -140,9 +139,9 @@ const App: React.FC = () => {
       // Horizontal Movement (A/D or Left/Right)
       if (!isPaused) {
         if (key === 'a' || key === 'arrowleft') {
-          handleMove(-30);
+          handleMove(-40);
         } else if (key === 'd' || key === 'arrowright') {
-          handleMove(30);
+          handleMove(40);
         }
       }
 
@@ -191,7 +190,6 @@ const App: React.FC = () => {
       
       {/* Top Controls Bar */}
       <div className={`absolute top-4 ${isRtl ? 'left-4' : 'right-4'} z-[100] flex gap-2 items-center`}>
-        {/* Language Switcher */}
         <select 
           value={lang} 
           onChange={(e) => {
@@ -212,7 +210,6 @@ const App: React.FC = () => {
           <option value="fr">Français</option>
         </select>
 
-        {/* Font Size Toggle */}
         <button 
           onClick={cycleFontSize}
           onFocus={() => speak(t.toggleFontSize)}
@@ -261,7 +258,6 @@ const App: React.FC = () => {
 
       {gameState === GameState.PLAYING && (
         <>
-          {/* HUD */}
           <div className={`absolute top-4 ${isRtl ? 'right-4' : 'left-4'} flex gap-4 z-50`}>
             <div className="bg-white/10 dark:bg-black/30 backdrop-blur-md px-6 py-2 rounded-full border-2 border-sky-400">
               <span className="font-bold">{t.score}: {score}</span>
@@ -291,13 +287,13 @@ const App: React.FC = () => {
             onEffectsChange={setActiveEffects}
           />
 
-          {/* Mobile Directional Controls (WASD alternative) */}
+          {/* On-screen Directional Controls for Mobile */}
           <div className="absolute bottom-16 left-0 w-full flex justify-between px-8 z-50 md:hidden pointer-events-none">
             <button 
-              onMouseDown={() => startContinuousMove(-10)}
+              onMouseDown={() => startContinuousMove(-15)}
               onMouseUp={stopContinuousMove}
               onMouseLeave={stopContinuousMove}
-              onTouchStart={(e) => { e.preventDefault(); startContinuousMove(-10); }}
+              onTouchStart={(e) => { e.preventDefault(); startContinuousMove(-15); }}
               onTouchEnd={stopContinuousMove}
               onFocus={() => speak(t.moveLeft)}
               className="pointer-events-auto w-24 h-24 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-4xl shadow-xl border-4 border-white/30 active:scale-90 transition-transform focus:ring-4 focus:ring-sky-500"
@@ -306,10 +302,10 @@ const App: React.FC = () => {
               ⬅️
             </button>
             <button 
-              onMouseDown={() => startContinuousMove(10)}
+              onMouseDown={() => startContinuousMove(15)}
               onMouseUp={stopContinuousMove}
               onMouseLeave={stopContinuousMove}
-              onTouchStart={(e) => { e.preventDefault(); startContinuousMove(10); }}
+              onTouchStart={(e) => { e.preventDefault(); startContinuousMove(15); }}
               onTouchEnd={stopContinuousMove}
               onFocus={() => speak(t.moveRight)}
               className="pointer-events-auto w-24 h-24 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-4xl shadow-xl border-4 border-white/30 active:scale-90 transition-transform focus:ring-4 focus:ring-sky-500"
@@ -329,9 +325,9 @@ const App: React.FC = () => {
         <GameOverScreen score={score} highScore={highScore} lang={lang} onRestart={startNewGame} speak={speak} />
       )}
 
-      <footer className={`absolute bottom-2 ${isRtl ? 'right-0 text-right' : 'left-0 text-left'} w-full px-4 flex justify-between items-center text-[10px] opacity-50 z-[100]`}>
+      <footer className={`absolute bottom-2 left-0 w-full px-4 flex justify-between items-center text-[10px] opacity-50 z-[100] ${isRtl ? 'flex-row-reverse' : ''}`}>
         <div>(C) Noam Gold AI 2026</div>
-        <div className="flex gap-4 items-center">
+        <div className={`flex gap-4 items-center ${isRtl ? 'flex-row-reverse' : ''}`}>
           <a href="#" className="hover:underline" onClick={(e) => { e.preventDefault(); speak(t.feedback); }}>{t.feedback}</a>
           <a href="mailto:goldnoamai@gmail.com" className="underline focus:ring-2 focus:ring-sky-500">goldnoamai@gmail.com</a>
         </div>
