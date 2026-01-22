@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { GameState, PowerUpType, Language, FontSize } from './types';
+import { GameState, PowerUpType, Language, FontSize, GameSettings } from './types';
 import { translations } from './translations';
 import GameCanvas from './components/GameCanvas';
 import StartScreen from './components/StartScreen';
@@ -31,6 +31,12 @@ const App: React.FC = () => {
   const [babiesSavedInLevel, setBabiesSavedInLevel] = useState(0);
   const [highScore, setHighScore] = useState(0);
   const [activeEffects, setActiveEffects] = useState<PowerUpType[]>([]);
+  const [showSettings, setShowSettings] = useState(false);
+  const [settings, setSettings] = useState<GameSettings>({
+    musicVolume: 0.5,
+    sfxVolume: 0.7,
+    sensitivity: 3
+  });
   
   const timerRef = useRef<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -45,11 +51,24 @@ const App: React.FC = () => {
     document.documentElement.lang = lang;
   }, [isDarkMode, isRtl, lang]);
 
-  // Load High Score from Local Storage
+  // Load High Score and Settings from Local Storage
   useEffect(() => {
-    const saved = localStorage.getItem('stork_mission_highscore');
-    if (saved) setHighScore(parseInt(saved, 10));
+    const savedHighScore = localStorage.getItem('stork_mission_highscore');
+    if (savedHighScore) setHighScore(parseInt(savedHighScore, 10));
+
+    const savedSettings = localStorage.getItem('stork_mission_settings');
+    if (savedSettings) {
+      try {
+        setSettings(JSON.parse(savedSettings));
+      } catch (e) {
+        console.error("Failed to parse settings", e);
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('stork_mission_settings', JSON.stringify(settings));
+  }, [settings]);
 
   useEffect(() => {
     if (score > highScore) {
@@ -64,29 +83,36 @@ const App: React.FC = () => {
       if (!audioRef.current) {
         audioRef.current = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
         audioRef.current.loop = true;
-        audioRef.current.volume = 0.2;
       }
+      audioRef.current.volume = settings.musicVolume * 0.4; // Soften music base
       audioRef.current.play().catch(() => {});
     } else {
       audioRef.current?.pause();
     }
-  }, [isMusicOn, gameState, isPaused]);
+  }, [isMusicOn, gameState, isPaused, settings.musicVolume]);
 
   const speak = useCallback((text: string) => {
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = langMap[lang] || 'en-US';
+      utterance.volume = settings.sfxVolume;
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(utterance);
     }
-  }, [lang]);
+  }, [lang, settings.sfxVolume]);
 
-  const startNewGame = () => {
+  const startNewGame = useCallback(() => {
     setScore(0); setLevel(1); setBabiesSavedInLevel(0);
     setTimeLeft(LEVEL_DURATION); setIsPaused(false); setActiveEffects([]);
     setGameState(GameState.PLAYING);
     speak(t.start);
-  };
+  }, [speak, t.start]);
+
+  const handleReset = useCallback(() => {
+    if (window.confirm(isRtl ? "האם אתה בטוח שברצונך לאתחל את המשחק?" : "Are you sure you want to reset the game?")) {
+      startNewGame();
+    }
+  }, [isRtl, startNewGame]);
 
   const handleLevelComplete = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -125,17 +151,19 @@ const App: React.FC = () => {
   }, [isPaused, speak, t.pause, t.resume]);
 
   const handleMove = useCallback((delta: number) => {
-    window.dispatchEvent(new CustomEvent('move-basket', { detail: delta }));
-  }, []);
+    // Apply sensitivity (normalized around 3)
+    const sensMult = 0.5 + (settings.sensitivity * 0.2);
+    window.dispatchEvent(new CustomEvent('move-basket', { detail: delta * sensMult }));
+  }, [settings.sensitivity]);
 
-  // Keyboard controls: WASD + Arrows + Pause
+  // Keyboard controls: WASD + Arrows + Pause Keys
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (gameState !== GameState.PLAYING) return;
+      if (gameState !== GameState.PLAYING || showSettings) return;
       
       const key = e.key.toLowerCase();
       
-      // Horizontal Movement (A/D or Left/Right)
+      // Horizontal Movement (A/D or Left/Right Arrows)
       if (!isPaused) {
         if (key === 'a' || key === 'arrowleft') {
           handleMove(-50);
@@ -144,14 +172,19 @@ const App: React.FC = () => {
         }
       }
 
-      // Pause/Resume (W/S or P/Escape)
-      if (key === 'p' || key === 'escape' || key === 'w' || key === 's') {
+      // Pause/Resume (P, Escape, W, S as alternates)
+      if (['p', 'escape', 'w', 's'].includes(key)) {
         togglePause();
+      }
+
+      // Reset (R)
+      if (key === 'r') {
+        handleReset();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState, isPaused, handleMove, togglePause]);
+  }, [gameState, isPaused, handleMove, togglePause, handleReset, showSettings]);
 
   const startContinuousMove = (delta: number) => {
     if (moveIntervalRef.current) return;
@@ -197,7 +230,7 @@ const App: React.FC = () => {
             setTimeout(() => speak(translations[newLang].langSelect), 50);
           }}
           onFocus={() => speak(t.langSelect)}
-          className="bg-white/20 backdrop-blur-md px-2 py-2 rounded-lg border border-white/30 text-xs font-bold appearance-none cursor-pointer hover:bg-white/40 focus:ring-4 focus:ring-sky-500"
+          className="bg-white/20 backdrop-blur-md px-2 py-2 rounded-lg border border-white/30 text-xs font-bold appearance-none cursor-pointer hover:bg-white/40 focus:ring-4 focus:ring-sky-500 text-slate-900 dark:text-white dark:bg-slate-800"
           aria-label={t.langSelect}
         >
           <option value="he">עברית</option>
@@ -220,13 +253,13 @@ const App: React.FC = () => {
         </button>
 
         <button 
-          onClick={toggleMusic}
-          onFocus={() => speak(t.toggleMusic)}
-          className={`p-3 rounded-full backdrop-blur-md shadow-lg border border-white/30 transition-all ${isMusicOn ? 'bg-pink-500/50' : 'bg-white/20'} hover:bg-white/40 focus:ring-4 focus:ring-sky-500`}
-          title={t.toggleMusic}
-          aria-label={t.toggleMusic}
+          onClick={() => setShowSettings(true)}
+          onFocus={() => speak(t.settings)}
+          className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40 focus:ring-4 focus:ring-sky-500"
+          title={t.settings}
+          aria-label={t.settings}
         >
-          {isMusicOn ? '🔊' : '🔈'}
+          ⚙️
         </button>
 
         <button 
@@ -240,14 +273,25 @@ const App: React.FC = () => {
         </button>
 
         {gameState === GameState.PLAYING && (
-          <button 
-            onClick={togglePause}
-            onFocus={() => speak(isPaused ? t.resume : t.pause)}
-            className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40 focus:ring-4 focus:ring-sky-500"
-            aria-label={isPaused ? t.resume : t.pause}
-          >
-            {isPaused ? '▶️' : '⏸️'}
-          </button>
+          <>
+            <button 
+              onClick={togglePause}
+              onFocus={() => speak(isPaused ? t.resume : t.pause)}
+              className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40 focus:ring-4 focus:ring-sky-500"
+              aria-label={isPaused ? t.resume : t.pause}
+            >
+              {isPaused ? '▶️' : '⏸️'}
+            </button>
+            <button 
+              onClick={handleReset}
+              onFocus={() => speak(t.restart)}
+              className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40 focus:ring-4 focus:ring-sky-500 text-xl font-bold"
+              title={t.restart}
+              aria-label={t.restart}
+            >
+              ↺
+            </button>
+          </>
         )}
       </div>
 
@@ -284,9 +328,11 @@ const App: React.FC = () => {
               speak(t.gameOver);
             }} 
             onEffectsChange={setActiveEffects}
+            settings={settings}
+            lang={lang}
           />
 
-          {/* On-screen Directional Controls for Mobile */}
+          {/* On-screen Directional Controls for Mobile (WASD equivalent) */}
           <div className="absolute bottom-16 left-0 w-full flex justify-between px-8 z-50 md:hidden pointer-events-none">
             <button 
               onMouseDown={() => startContinuousMove(-20)}
@@ -322,6 +368,67 @@ const App: React.FC = () => {
 
       {gameState === GameState.GAME_OVER && (
         <GameOverScreen score={score} highScore={highScore} lang={lang} onRestart={startNewGame} speak={speak} />
+      )}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white p-8 rounded-3xl max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-300">
+            <h2 className="text-3xl font-black mb-6 text-sky-600 dark:text-sky-400">{t.settings}</h2>
+            
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-bold mb-2 flex justify-between">
+                  <span>{t.musicVolume}</span>
+                  <span>{Math.round(settings.musicVolume * 100)}%</span>
+                </label>
+                <div className="flex items-center gap-4">
+                  <button onClick={toggleMusic} className="text-2xl">{isMusicOn ? '🔊' : '🔈'}</button>
+                  <input 
+                    type="range" min="0" max="1" step="0.1" 
+                    value={settings.musicVolume} 
+                    onChange={(e) => setSettings({...settings, musicVolume: parseFloat(e.target.value)})}
+                    className="flex-1 accent-sky-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold mb-2 flex justify-between">
+                  <span>{t.sfxVolume}</span>
+                  <span>{Math.round(settings.sfxVolume * 100)}%</span>
+                </label>
+                <input 
+                  type="range" min="0" max="1" step="0.1" 
+                  value={settings.sfxVolume} 
+                  onChange={(e) => setSettings({...settings, sfxVolume: parseFloat(e.target.value)})}
+                  className="w-full accent-pink-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold mb-2 flex justify-between">
+                  <span>{t.sensitivity}</span>
+                  <span>{settings.sensitivity}</span>
+                </label>
+                <input 
+                  type="range" min="1" max="5" step="1" 
+                  value={settings.sensitivity} 
+                  onChange={(e) => setSettings({...settings, sensitivity: parseInt(e.target.value)})}
+                  className="w-full accent-yellow-500"
+                />
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setShowSettings(false)}
+              onFocus={() => speak(t.close)}
+              className="mt-8 w-full bg-sky-500 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-sky-400 transition-colors focus:ring-4 focus:ring-sky-300"
+            >
+              {t.close}
+            </button>
+          </div>
+        </div>
       )}
 
       <footer className={`absolute bottom-2 left-0 w-full px-4 flex justify-between items-center text-[10px] opacity-50 z-[100] ${isRtl ? 'flex-row-reverse' : ''}`}>

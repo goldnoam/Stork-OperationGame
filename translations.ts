@@ -1,4 +1,3 @@
-
 export const translations = {
   he: {
     title: "מבצע חסידה",
@@ -32,7 +31,13 @@ export const translations = {
     resume: "המשך משחק",
     langSelect: "בחר שפה",
     moveLeft: "זוז שמאלה",
-    moveRight: "זוז ימינה"
+    moveRight: "זוז ימינה",
+    settings: "הגדרות",
+    musicVolume: "עוצמת מוזיקה",
+    sfxVolume: "עוצמת צלילים",
+    sensitivity: "רגישות שליטה",
+    close: "סגור",
+    saved: "ניצל!"
   },
   en: {
     title: "Stork Mission",
@@ -66,7 +71,13 @@ export const translations = {
     resume: "Resume Game",
     langSelect: "Select Language",
     moveLeft: "Move Left",
-    moveRight: "Move Right"
+    moveRight: "Move Right",
+    settings: "Settings",
+    musicVolume: "Music Volume",
+    sfxVolume: "SFX Volume",
+    sensitivity: "Sensitivity",
+    close: "Close",
+    saved: "Saved!"
   },
   zh: {
     title: "送子鸟任务",
@@ -100,7 +111,13 @@ export const translations = {
     resume: "继续游戏",
     langSelect: "选择语言",
     moveLeft: "向左移动",
-    moveRight: "向右移动"
+    moveRight: "向右移动",
+    settings: "设置",
+    musicVolume: "音乐音量",
+    sfxVolume: "音效音量",
+    sensitivity: "灵敏度",
+    close: "关闭",
+    saved: "拯救了！"
   },
   hi: {
     title: "स्टॉर्क मिशन",
@@ -127,14 +144,20 @@ export const translations = {
     golden: "सुनहरा",
     levelNames: ["पालना मिशन", "गुलाबी बादल", "स्टॉर्क गति", "उड़ते बच्चे", "तूफान आ रहा है", "शिखर ऊंचाई"],
     feedback: "प्रतिक्रिया",
-    toggleTheme: "थीम बदलें",
+    toggleTheme: "थीม बदलें",
     toggleMusic: "संगीत चालू या बंद करें",
     toggleFontSize: "फ़ॉन्ट का आकार बदलें",
     pause: "खेल रोकें",
     resume: "खेल फिर से शुरू करें",
     langSelect: "भाषा चुनें",
     moveLeft: "बाएं चलें",
-    moveRight: "दाएं चलें"
+    moveRight: "दाएं चलें",
+    settings: "सेटअप",
+    musicVolume: "संगीत आवाज़",
+    sfxVolume: "ध्वनि प्रभाव",
+    sensitivity: "संवेदनशीलता",
+    close: "बंद करें",
+    saved: "बचा लिया!"
   },
   de: {
     title: "Storch-Mission",
@@ -168,7 +191,13 @@ export const translations = {
     resume: "Spiel fortsetzen",
     langSelect: "Sprache auswählen",
     moveLeft: "Nach links",
-    moveRight: "Nach rechts"
+    moveRight: "Nach rechts",
+    settings: "Einstellungen",
+    musicVolume: "Musiklaustärke",
+    sfxVolume: "Effektlautstärke",
+    sensitivity: "Empfindlichkeit",
+    close: "Schließen",
+    saved: "Gerettet!"
   },
   es: {
     title: "Misión Cigüeña",
@@ -202,7 +231,13 @@ export const translations = {
     resume: "Continuar juego",
     langSelect: "Seleccionar idioma",
     moveLeft: "Izquierda",
-    moveRight: "Derecha"
+    moveRight: "Derecha",
+    settings: "Ajustes",
+    musicVolume: "Volumen música",
+    sfxVolume: "Volumen efectos",
+    sensitivity: "Sensibilidad",
+    close: "Cerrar",
+    saved: "¡Salvado!"
   },
   fr: {
     title: "Mission Cigogne",
@@ -236,6 +271,12 @@ export const translations = {
     resume: "Reprendre",
     langSelect: "Choisir la langue",
     moveLeft: "Gauche",
-    moveRight: "Droite"
+    moveRight: "Droite",
+    settings: "Réglages",
+    musicVolume: "Volume musique",
+    sfxVolume: "Volume effets",
+    sensitivity: "Sensibilité",
+    close: "Fermer",
+    saved: "Sauvé !"
   }
 };

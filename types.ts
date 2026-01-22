@@ -1,4 +1,3 @@
-
 export enum GameState {
   START = 'START',
   PLAYING = 'PLAYING',
@@ -46,6 +45,7 @@ export interface PowerUp {
 export interface ActiveEffect {
   type: PowerUpType;
   endTime: number;
+  startTime: number;
 }
 
 export interface Stork {
@@ -64,4 +64,10 @@ export interface FloatingScore {
   color: string;
   opacity: number;
   life: number;
+}
+
+export interface GameSettings {
+  musicVolume: number;
+  sfxVolume: number;
+  sensitivity: number;
 }
