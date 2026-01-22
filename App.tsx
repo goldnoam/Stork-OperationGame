@@ -56,7 +56,6 @@ const App: React.FC = () => {
     }
   }, [isDarkMode, isRtl, lang]);
 
-  // Load High Score and Settings from Local Storage
   useEffect(() => {
     const savedHighScore = localStorage.getItem('stork_mission_highscore');
     if (savedHighScore) setHighScore(parseInt(savedHighScore, 10));
@@ -82,14 +81,13 @@ const App: React.FC = () => {
     }
   }, [score, highScore]);
 
-  // Handle Music
   useEffect(() => {
     if (isMusicOn && gameState === GameState.PLAYING && !isPaused) {
       if (!audioRef.current) {
         audioRef.current = new Audio('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
         audioRef.current.loop = true;
       }
-      audioRef.current.volume = settings.musicVolume * 0.4; // Soften music base
+      audioRef.current.volume = settings.musicVolume * 0.4;
       audioRef.current.play().catch(() => {});
     } else {
       audioRef.current?.pause();
@@ -117,7 +115,7 @@ const App: React.FC = () => {
     if (window.confirm(isRtl ? "האם אתה בטוח שברצונך לאתחל את המשחק?" : "Are you sure you want to reset the game?")) {
       startNewGame();
     }
-  }, [isRtl, startNewGame, startNewGame]);
+  }, [isRtl, startNewGame]);
 
   const handleLevelComplete = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -187,22 +185,6 @@ const App: React.FC = () => {
     }
   };
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    speak(t.toggleTheme);
-  };
-  
-  const toggleMusic = () => { 
-    const nextOn = !isMusicOn;
-    setIsMusicOn(nextOn); 
-    speak(nextOn ? "Music On" : "Music Off"); 
-  };
-
-  const cycleFontSize = () => {
-    setFontSize(prev => prev === 'small' ? 'medium' : prev === 'medium' ? 'large' : 'small');
-    speak(t.toggleFontSize);
-  };
-
   const fontSizeClass = fontSize === 'small' ? 'text-sm' : fontSize === 'large' ? 'text-xl' : 'text-base';
   const currentLevelName = t.levelNames[(level - 1) % t.levelNames.length];
 
@@ -219,7 +201,6 @@ const App: React.FC = () => {
             setTimeout(() => speak(translations[newLang].langSelect), 50);
           }}
           className="bg-white/20 backdrop-blur-md px-2 py-2 rounded-lg border border-white/30 text-xs font-bold appearance-none cursor-pointer hover:bg-white/40 focus:ring-4 focus:ring-sky-500 text-slate-900 dark:text-white dark:bg-slate-800"
-          aria-label={t.langSelect}
         >
           <option value="he">עברית</option>
           <option value="en">English</option>
@@ -230,12 +211,8 @@ const App: React.FC = () => {
           <option value="fr">Français</option>
         </select>
 
-        <button onClick={cycleFontSize} className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-xs font-bold hover:bg-white/40" title={t.toggleFontSize} aria-label={t.toggleFontSize}>
-          {fontSize === 'small' ? 'A-' : fontSize === 'large' ? 'A+' : 'A'}
-        </button>
-
-        <button onClick={() => setShowSettings(true)} className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40" title={t.settings} aria-label={t.settings}>⚙️</button>
-        <button onClick={toggleTheme} className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40" title={t.toggleTheme}>{isDarkMode ? '☀️' : '🌙'}</button>
+        <button onClick={() => setShowSettings(true)} className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40" title={t.settings}>⚙️</button>
+        <button onClick={() => setIsDarkMode(!isDarkMode)} className="p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/40">{isDarkMode ? '☀️' : '🌙'}</button>
 
         {gameState === GameState.PLAYING && (
           <>
@@ -274,8 +251,8 @@ const App: React.FC = () => {
           />
 
           {/* WASD Mobile Layout */}
-          <div className="absolute bottom-16 left-0 w-full flex justify-center items-center z-50 md:hidden pointer-events-none px-4">
-            <div className="grid grid-cols-3 grid-rows-2 gap-4">
+          <div className="absolute bottom-24 left-0 w-full flex justify-center items-center z-50 md:hidden pointer-events-none px-4">
+            <div className="grid grid-cols-3 grid-rows-2 gap-3">
               <div />
               <button 
                 onMouseDown={togglePause} onTouchStart={(e) => { e.preventDefault(); togglePause(); }}
@@ -317,7 +294,7 @@ const App: React.FC = () => {
                   <span>{t.musicVolume}</span><span>{Math.round(settings.musicVolume * 100)}%</span>
                 </label>
                 <div className="flex items-center gap-4">
-                  <button onClick={toggleMusic} className="text-2xl">{isMusicOn ? '🔊' : '🔈'}</button>
+                  <button onClick={() => setIsMusicOn(!isMusicOn)} className="text-2xl">{isMusicOn ? '🔊' : '🔈'}</button>
                   <input type="range" min="0" max="1" step="0.1" value={settings.musicVolume} onChange={(e) => setSettings({...settings, musicVolume: parseFloat(e.target.value)})} className="flex-1 accent-sky-500" />
                 </div>
               </div>
@@ -339,7 +316,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <footer className={`fixed bottom-2 left-0 w-full px-4 flex justify-between items-center text-[10px] opacity-50 z-[100] ${isRtl ? 'flex-row-reverse' : ''}`}>
+      <footer className={`fixed bottom-2 left-0 w-full px-4 flex justify-between items-center text-[10px] opacity-40 z-[100] ${isRtl ? 'flex-row-reverse' : ''}`}>
         <div>(C) Noam Gold AI 2026</div>
         <div className={`flex gap-4 items-center ${isRtl ? 'flex-row-reverse' : ''}`}>
           <a href="#" className="hover:underline" onClick={(e) => { e.preventDefault(); speak(t.feedback); }}>{t.feedback}</a>

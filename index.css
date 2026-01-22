@@ -1,14 +1,8 @@
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer base {
-  body {
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    touch-action: manipulation;
-  }
+/* Custom styles that don't depend on Tailwind PostCSS processing */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Assistant', sans-serif;
 }
 
 .rtl {
@@ -23,4 +17,5 @@
 
 canvas {
   touch-action: none;
+  display: block;
 }
